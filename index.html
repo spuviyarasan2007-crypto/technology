@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Weather Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <i class="fa-solid fa-cloud-sun-rain brand-icon"></i>
+        <div>
+          <h1>Atmosphere Live</h1>
+          <p class="subtitle">Asynchronous Weather Intelligence & Analytics</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="location-btn" class="action-btn" title="Use Current GPS Location">
+          <i class="fa-solid fa-location-crosshairs"></i>
+          <span>My Location</span>
+        </button>
+        <button id="unit-toggle" class="unit-toggle-btn" title="Toggle Units">
+          <span class="unit-label active" id="unit-c">°C</span>
+          <span class="unit-divider">/</span>
+          <span class="unit-label" id="unit-f">°F</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <form id="search-form" class="search-form" autocomplete="off">
+        <div class="input-container">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            type="text"
+            id="city-input"
+            placeholder="Search for any city (e.g., Tokyo, London, New York)..."
+            required
+          />
+          <button type="button" id="clear-btn" class="clear-btn hidden" title="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <button type="submit" id="search-btn" class="search-submit-btn">
+          <span>Search</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Quick Recent Cities Chips -->
+      <div class="recent-searches" id="recent-searches">
+        <span class="recent-label"><i class="fa-solid fa-clock-rotate-left"></i> Recent:</span>
+        <div class="chips-container" id="chips-container">
+          <!-- Dynamic tags inserted via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Notification / Status Banner -->
+    <div id="status-container" class="status-container hidden">
+      <div id="status-card" class="status-card">
+        <i id="status-icon" class="fa-solid fa-circle-notch fa-spin"></i>
+        <div class="status-text">
+          <h4 id="status-title">Fetching Data</h4>
+          <p id="status-message">Connecting to meteorological REST API...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="weather-display" class="weather-display hidden">
+      <!-- Top Overview Card -->
+      <div class="overview-grid">
+        <div class="card current-weather-card">
+          <div class="card-header">
+            <div>
+              <h2 id="city-name" class="location-name">--</h2>
+              <p id="country-region" class="location-sub">--</p>
+              <p id="local-time" class="local-timestamp"><i class="fa-regular fa-clock"></i> --</p>
+            </div>
+            <div class="weather-icon-badge" id="weather-icon-badge">
+              <i id="condition-icon" class="fa-solid fa-sun condition-icon"></i>
+            </div>
+          </div>
+
+          <div class="temp-section">
+            <div class="temp-display">
+              <span id="current-temp" class="temp-value">--</span>
+              <span class="temp-unit" id="display-temp-unit">°C</span>
+            </div>
+            <div class="weather-desc">
+              <span id="weather-description" class="condition-badge">Clear Sky</span>
+              <span class="apparent-temp">Feels like <strong id="feels-like-temp">--°</strong></span>
+            </div>
+          </div>
+
+          <div class="min-max-bar">
+            <span><i class="fa-solid fa-arrow-down"></i> Min: <b id="min-temp">--°</b></span>
+            <span class="divider">|</span>
+            <span><i class="fa-solid fa-arrow-up"></i> Max: <b id="max-temp">--°</b></span>
+          </div>
+        </div>
+
+        <!-- Live Key Metrics Grid -->
+        <div class="metrics-container">
+          <!-- Humidity -->
+          <div class="metric-card">
+            <div class="metric-icon humidity-icon">
+              <i class="fa-solid fa-droplet"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Relative Humidity</span>
+              <h3 id="humidity-val" class="metric-value">--%</h3>
+              <p id="humidity-status" class="metric-sub">Optimal comfort</p>
+            </div>
+          </div>
+
+          <!-- Wind Speed -->
+          <div class="metric-card">
+            <div class="metric-icon wind-icon">
+              <i class="fa-solid fa-wind"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Wind Velocity</span>
+              <h3 id="wind-val" class="metric-value">-- km/h</h3>
+              <p id="wind-dir" class="metric-sub">Direction: --</p>
+            </div>
+          </div>
+
+          <!-- Air Pressure / Surface Pressure -->
+          <div class="metric-card">
+            <div class="metric-icon pressure-icon">
+              <i class="fa-solid fa-gauge-high"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Atmospheric Pressure</span>
+              <h3 id="pressure-val" class="metric-value">-- hPa</h3>
+              <p class="metric-sub">Mean sea-level</p>
+            </div>
+          </div>
+
+          <!-- Precipitation / UV Index -->
+          <div class="metric-card">
+            <div class="metric-icon uv-icon">
+              <i class="fa-solid fa-sun"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Precipitation & Cloud</span>
+              <h3 id="precipitation-val" class="metric-value">0 mm</h3>
+              <p id="cloud-cover-val" class="metric-sub">Cloud Cover: --%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hourly Forecast Row -->
+      <section class="forecast-section">
+        <h3 class="section-title"><i class="fa-solid fa-chart-line"></i> 24-Hour Timeline Forecast</h3>
+        <div class="hourly-scroll" id="hourly-forecast-container">
+          <!-- Dynamically populated with hourly cards -->
+        </div>
+      </section>
+
+      <!-- 7-Day Forecast Grid -->
+      <section class="forecast-section">
+        <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> 7-Day Outlook</h3>
+        <div class="daily-grid" id="daily-forecast-container">
+          <!-- Dynamically populated with 7-day cards -->
+        </div>
+      </section>
+
+      <!-- API & Nested JSON Inspector -->
+      <section class="api-inspector-section">
+        <details class="json-details">
+          <summary>
+            <span><i class="fa-solid fa-code"></i> Developer REST API Inspection (Nested JSON Response)</span>
+            <span class="summary-badge">Async JSON Payload</span>
+          </summary>
+          <div class="json-viewer-body">
+            <div class="json-header">
+              <span id="endpoint-url" class="endpoint-tag">GET https://api.open-meteo.com/v1/forecast...</span>
+              <button id="copy-json-btn" class="copy-btn" title="Copy raw JSON">
+                <i class="fa-regular fa-copy"></i> Copy
+              </button>
+            </div>
+            <pre><code id="json-raw-display">// JSON payload will load here...</code></pre>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Powered by Open-Meteo RESTful API &bull; Built with Asynchronous JavaScript (async/await, Fetch API)</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
